@@ -10,7 +10,7 @@ import Paradoxie from '@/assets/products/Paradoxie.webp';
 const initialForm = {
     name: '',
     notes: '',
-    price: '', // now a string, allows empty input
+    price: '', // string to allow empty input
     image: '',
     tag: '',
     featured: false,
@@ -64,7 +64,7 @@ export default function AdminProducts() {
             const data = await getAdminProducts();
             setProducts(data);
         } catch (err) {
-            // Silently fail - let page show empty state
+            // silently fail
         } finally {
             setLoading(false);
         }
@@ -75,7 +75,7 @@ export default function AdminProducts() {
             const data = await getAdminProducts();
             setProducts(data);
         } catch {
-            // Silently fail on reload after action
+            // silently fail
         }
     };
 
@@ -84,19 +84,67 @@ export default function AdminProducts() {
         setTimeout(() => setIsLoaded(true), 100);
     }, []);
 
+    // 🔒 Block page scrolling but keep scrollbar visible
+    useEffect(() => {
+        if (isModalMounted) {
+            // Stop Lenis smooth scrolling
+            if (window.__lenis) {
+                window.__lenis.stop();
+            }
+
+            // Prevent default wheel/touch on document, but allow inside modal
+            const preventScroll = (e) => {
+                const modalContainer = document.querySelector('.modal-scroll-container');
+                if (modalContainer && modalContainer.contains(e.target)) {
+                    return; // allow scrolling inside modal
+                }
+                e.preventDefault();
+            };
+
+            document.addEventListener('wheel', preventScroll, { passive: false });
+            document.addEventListener('touchmove', preventScroll, { passive: false });
+
+            // Store for cleanup
+            window.__scrollPreventListeners = { preventScroll };
+        } else {
+            // Resume Lenis
+            if (window.__lenis) {
+                window.__lenis.start();
+            }
+
+            // Remove event listeners
+            if (window.__scrollPreventListeners) {
+                document.removeEventListener('wheel', window.__scrollPreventListeners.preventScroll);
+                document.removeEventListener('touchmove', window.__scrollPreventListeners.preventScroll);
+                delete window.__scrollPreventListeners;
+            }
+        }
+
+        // Cleanup on unmount
+        return () => {
+            if (window.__lenis) {
+                window.__lenis.start();
+            }
+            if (window.__scrollPreventListeners) {
+                document.removeEventListener('wheel', window.__scrollPreventListeners.preventScroll);
+                document.removeEventListener('touchmove', window.__scrollPreventListeners.preventScroll);
+                delete window.__scrollPreventListeners;
+            }
+        };
+    }, [isModalMounted]);
+
     const sortedProducts = useMemo(() => [...products].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)), [products]);
 
     const productTagOptions = useMemo(() => {
-        const uniqueTags = [...new Set(products.map((product) => product.tag).filter(Boolean))];
+        const uniqueTags = [...new Set(products.map((p) => p.tag).filter(Boolean))];
         return [
             { value: '', label: 'All Tags' },
-            ...uniqueTags.map((option) => ({ value: option, label: option })),
+            ...uniqueTags.map((tag) => ({ value: tag, label: tag })),
         ];
     }, [products]);
 
     const filteredProducts = useMemo(() => {
         const normalizedSearch = searchQuery.trim().toLowerCase();
-
         return sortedProducts.filter((product) => {
             const searchable = [
                 product.name,
@@ -150,7 +198,7 @@ export default function AdminProducts() {
             setForm({
                 name: product.name || '',
                 notes: product.notes || '',
-                price: product.price?.toString() || '', // convert to string
+                price: product.price?.toString() || '',
                 image: product.image || '',
                 tag: product.tag || '',
                 featured: Boolean(product.featured),
@@ -181,22 +229,17 @@ export default function AdminProducts() {
         }, 300);
     };
 
-    // Removed handleBackdropClick – clicking outside does nothing
-
     const validateForm = () => {
         const errors = {};
         if (!form.name.trim()) {
             errors.name = 'Product name is required';
         }
-
-        // Validate price: must be a valid positive number
         const priceValue = parseFloat(form.price);
         if (form.price.trim() === '') {
             errors.price = 'Price is required';
         } else if (isNaN(priceValue) || priceValue < 0) {
             errors.price = 'Price must be a positive number';
         }
-
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -207,8 +250,7 @@ export default function AdminProducts() {
 
         setSubmitting(true);
         try {
-            // Build payload, converting price to number
-            let payload = {
+            const payload = {
                 ...form,
                 price: parseFloat(form.price) || 0,
             };
@@ -233,7 +275,7 @@ export default function AdminProducts() {
             closeModal();
             await loadProductsAfterAction();
         } catch (err) {
-            // Error toast shown by axios interceptor
+            // error handled by interceptor
         } finally {
             setSubmitting(false);
         }
@@ -262,7 +304,7 @@ export default function AdminProducts() {
                     showToast(`Product "${productName}" has been removed.`, 'success');
                     await loadProductsAfterAction();
                 } catch (err) {
-                    // Error toast shown by axios interceptor
+                    // error handled by interceptor
                 } finally {
                     setDeletingId(null);
                     setConfirmation((current) => ({ ...current, open: false, isProcessing: false }));
@@ -292,10 +334,16 @@ export default function AdminProducts() {
         return createPortal(
             <div
                 className={`fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-opacity duration-300 ${modalVisible ? 'opacity-100' : 'opacity-0'}`}
-            // Removed onClick handler – clicking outside does nothing
             >
                 <div
-                    className={`relative max-w-2xl w-full max-h-[90vh] bg-warm-white dark:bg-dark-teal border border-old-gold/20 shadow-2xl overflow-y-auto transition-all duration-300 ease-out transform ${modalVisible ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'}`}
+                    className="modal-scroll-container relative max-w-2xl w-full bg-warm-white dark:bg-dark-teal border border-old-gold/20 shadow-2xl transition-all duration-300 ease-out transform"
+                    style={{
+                        maxHeight: '90vh',
+                        overflowY: 'auto',
+                        overscrollBehavior: 'contain',
+                        touchAction: 'auto',
+                    }}
+                    onWheel={(e) => e.stopPropagation()} // keep Lenis away
                 >
                     <button
                         onClick={closeModal}
