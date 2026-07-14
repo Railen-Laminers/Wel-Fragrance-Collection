@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <script>
+    (function () {
+      try {
+        const stored = localStorage.getItem('theme');
+        if (stored === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) { }
+    })();
+  </script>
+
+  <link rel="icon" type="image/webp" href="/webLogo.webp" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Wel Fragrance — Every Fragrance Tells a Story</title>
+  <meta name="description"
+    content="Wel Fragrance Collection — Luxury handcrafted perfumes from the Philippines and Canada. Discover scents that tell your story." />
+  <meta property="og:title" content="Wel Fragrance — Every Fragrance Tells a Story" />
+  <meta property="og:description"
+    content="Luxury handcrafted perfumes from the Philippines and Canada. Discover scents that tell your story." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Wel Fragrance — Every Fragrance Tells a Story" />
+  <meta name="twitter:description"
+    content="Luxury handcrafted perfumes from the Philippines and Canada. Discover scents that tell your story." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet" />
+  </noscript>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap"
+      rel="stylesheet" />
+  </noscript>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

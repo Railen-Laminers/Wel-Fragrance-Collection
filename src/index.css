@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --color-bg: #F2EDE6;
+        --color-text: #0B0B0C;
+    }
+
+    .dark {
+        --color-bg: #0B0B0C;
+        --color-text: #FFFFFF;
+    }
+
+    body {
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-family: 'Jost', sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+        scrollbar-gutter: stable;
+        /* <-- ADD THIS LINE */
+    }
+
+    /* ─── ULTRA-THIN, HIDDEN-UNTIL-INTERACTION SCROLLBAR ─── */
+
+    /* Chromium (Chrome, Edge, Safari, Opera) */
+    *::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: transparent;
+        border-radius: 10px;
+        transition: background 0.25s ease;
+    }
+
+    /* Reveal the thumb only when hovering the scrollable container */
+    *:hover::-webkit-scrollbar-thumb {
+        background: rgba(199, 159, 72, 0.25);
+    }
+
+    /* Darken further when hovering the thumb itself */
+    *::-webkit-scrollbar-thumb:hover {
+        background: rgba(199, 159, 72, 0.55);
+    }
+
+    /* Firefox (no per-pixel width control; "thin" is the native minimum) */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+    }
+
+    *:hover {
+        scrollbar-color: rgba(199, 159, 72, 0.35) transparent;
+    }
+}
