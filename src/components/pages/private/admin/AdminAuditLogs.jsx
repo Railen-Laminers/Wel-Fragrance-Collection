@@ -3,6 +3,7 @@ import api from '../../../../api/axios';
 import { showToast } from '../../../../utils/toast';
 import ConfirmationModal from '../../../common/ConfirmationModal';
 import AdminSearchFilters from '../../../common/AdminSearchFilters';
+import SkeletonShimmer from '../../../common/SkeletonShimmer';
 
 const ACTION_OPTIONS = ['Login', 'Logout', 'Create', 'Update', 'Delete', 'View', 'Approve', 'Reject'];
 const MODULE_OPTIONS = ['Auth', 'Profile', 'Products', 'Testimonials', 'Inquiries', 'Users'];
@@ -190,7 +191,19 @@ export default function AdminAuditLogs() {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="px-3 py-8 text-center text-black/60 dark:text-white/60">Loading logs…</td>
+                                    <td colSpan="5" className="px-3 py-8">
+                                        <div className="space-y-3">
+                                            {Array.from({ length: 5 }).map((_, index) => (
+                                                <div key={index} className="grid grid-cols-[1.2fr_0.7fr_0.7fr_2fr_0.8fr] gap-3">
+                                                    <SkeletonShimmer className="h-4 w-full rounded-full" />
+                                                    <SkeletonShimmer className="h-4 w-full rounded-full" />
+                                                    <SkeletonShimmer className="h-4 w-full rounded-full" />
+                                                    <SkeletonShimmer className="h-4 w-full rounded-full" />
+                                                    <SkeletonShimmer className="h-4 w-full rounded-full" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : logs.length === 0 ? (
                                 <tr>

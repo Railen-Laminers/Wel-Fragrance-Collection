@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import api from '../../../../api/axios';
 import { showToast } from '../../../../utils/toast';
+import SkeletonShimmer from '../../../common/SkeletonShimmer';
 
 // Icons as inline SVGs
 const ProductIcon = () => (
@@ -51,13 +52,17 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <section className="min-h-screen px-6 py-24 text-black dark:text-white">
-        <div className="mx-auto max-w-6xl">
-          <div className="animate-pulse space-y-6">
-            <div className="h-10 w-48 bg-old-gold/20 rounded" />
-            <div className="h-6 w-72 bg-old-gold/10 rounded" />
+        <div className="mx-auto max-w-6xl rounded-lg border border-black/10 bg-white/80 p-8 shadow-xl backdrop-blur dark:border-white/10 dark:bg-dark-teal/80">
+          <div className="space-y-6">
+            <SkeletonShimmer className="h-10 w-48 rounded-full" />
+            <SkeletonShimmer className="h-6 w-72 rounded-full" />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-white/10 rounded-lg" />
+                <div key={i} className="rounded-lg border border-black/10 bg-black/5 p-6 dark:border-white/10 dark:bg-white/5">
+                  <SkeletonShimmer className="mx-auto h-8 w-16 rounded-full" />
+                  <SkeletonShimmer className="mx-auto mt-4 h-4 w-24 rounded-full" />
+                  <SkeletonShimmer className="mx-auto mt-4 h-10 w-20 rounded-full" />
+                </div>
               ))}
             </div>
           </div>

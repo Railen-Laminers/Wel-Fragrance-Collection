@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { getPublicProducts } from '../../../api/products';
 import Paradoxie from '@/assets/products/Paradoxie.webp';
+import SkeletonShimmer from '../../common/SkeletonShimmer';
 
 export default function Products() {
     const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -187,7 +188,24 @@ export default function Products() {
                     {/* Product Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                         {loading ? (
-                            <div className="col-span-full rounded-2xl border border-dashed border-black/10 p-10 text-center text-sm text-black/60 dark:border-white/10 dark:text-white/60">Loading fragrances…</div>
+                            <>
+                                {Array.from({ length: 8 }).map((_, index) => (
+                                    <div key={index} className="group relative">
+                                        <div className="relative aspect-[3/4] overflow-hidden mb-4 sm:mb-6 border border-old-gold/10 bg-warm-white/70 dark:bg-charcoal/70 shadow-[0_20px_40px_rgba(45,35,17,0.06)]">
+                                            <SkeletonShimmer className="absolute inset-0" />
+                                            <div className="absolute inset-4 border border-old-gold/10" />
+                                            <div className="absolute top-4 right-4 h-7 w-7 rounded-full border border-old-gold/10" />
+                                            <div className="absolute top-4 left-4 h-7 w-20 rounded-full border border-old-gold/10" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <SkeletonShimmer className="h-6 w-3/4 rounded-full" />
+                                            <SkeletonShimmer className="h-4 w-full rounded-full" />
+                                            <SkeletonShimmer className="h-4 w-2/3 rounded-full" />
+                                            <SkeletonShimmer className="mt-2 h-5 w-20 rounded-full" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
                         ) : filteredProducts.length > 0 ? (
                             filteredProducts.map((product, index) => (
                                 <div

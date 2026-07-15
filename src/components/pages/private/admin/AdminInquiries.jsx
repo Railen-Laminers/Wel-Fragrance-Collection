@@ -4,6 +4,7 @@ import { deleteInquiry, getAdminInquiries, markInquiryAsRead, markInquiryAsUnrea
 import AdminSearchFilters from '../../../common/AdminSearchFilters';
 import { showToast } from '../../../../utils/toast';
 import ConfirmationModal from '../../../common/ConfirmationModal';
+import SkeletonShimmer from '../../../common/SkeletonShimmer';
 
 export default function AdminInquiries() {
   const { user } = useAuth();
@@ -160,7 +161,24 @@ export default function AdminInquiries() {
         </div>
 
         {loading ? (
-          <div className="mt-8 text-sm text-black/60 dark:text-white/60">Loading inquiries…</div>
+          <div className="mt-8 space-y-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="rounded-lg border border-black/10 bg-black/5 p-5 dark:border-white/10 dark:bg-white/5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex-1 space-y-2">
+                    <SkeletonShimmer className="h-5 w-40 rounded-full" />
+                    <SkeletonShimmer className="h-4 w-56 rounded-full" />
+                    <SkeletonShimmer className="h-4 w-full rounded-full" />
+                    <SkeletonShimmer className="h-4 w-3/4 rounded-full" />
+                  </div>
+                  <div className="flex flex-col gap-2 lg:min-w-[180px]">
+                    <SkeletonShimmer className="h-10 w-full rounded-none" />
+                    <SkeletonShimmer className="h-10 w-full rounded-none" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : inquiries.length === 0 ? (
           <div className="mt-8 rounded-lg border border-dashed border-black/10 p-10 text-center text-black/60 dark:border-white/10 dark:text-white/60">
             No inquiry submissions yet.

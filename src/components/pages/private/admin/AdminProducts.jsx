@@ -6,6 +6,7 @@ import AdminSearchFilters from '../../../common/AdminSearchFilters';
 import { showToast } from '../../../../utils/toast';
 import ConfirmationModal from '../../../common/ConfirmationModal';
 import Paradoxie from '@/assets/products/Paradoxie.webp';
+import SkeletonShimmer from '../../../common/SkeletonShimmer';
 
 const initialForm = {
     name: '',
@@ -633,8 +634,21 @@ export default function AdminProducts() {
                         }`}
                 >
                     {loading ? (
-                        <div className="rounded-lg border border-dashed border-black/10 p-10 text-center text-sm text-black/60 dark:border-white/10 dark:text-white/60">
-                            Loading products…
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {Array.from({ length: 8 }).map((_, index) => (
+                                <div key={index} className="group relative rounded-lg border border-black/10 bg-black/5 overflow-hidden dark:border-white/10 dark:bg-white/5">
+                                    <SkeletonShimmer className="relative aspect-[3/4] overflow-hidden bg-warm-white/50 dark:bg-charcoal/50" />
+                                    <div className="p-4 space-y-2">
+                                        <SkeletonShimmer className="h-6 w-3/4 rounded-full" />
+                                        <SkeletonShimmer className="h-4 w-full rounded-full" />
+                                        <SkeletonShimmer className="h-4 w-2/3 rounded-full" />
+                                        <div className="flex gap-2 pt-2">
+                                            <SkeletonShimmer className="h-9 flex-1 rounded-none" />
+                                            <SkeletonShimmer className="h-9 flex-1 rounded-none" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : filteredProducts.length === 0 ? (
                         <div className="rounded-lg border border-dashed border-black/10 p-10 text-center text-sm text-black/60 dark:border-white/10 dark:text-white/60">

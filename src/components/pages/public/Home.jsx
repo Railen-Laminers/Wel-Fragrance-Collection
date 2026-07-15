@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { getFeaturedProducts } from '../../../api/products';
+import SkeletonShimmer from '../../common/SkeletonShimmer';
 
 // Local product images (adjust paths if needed)
 import Paradoxie from '@/assets/products/Paradoxie.webp';
@@ -471,7 +472,23 @@ function Products() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {loading ? (
-            <div className="col-span-full rounded-2xl border border-dashed border-black/10 p-8 text-center text-sm text-black/60 dark:border-white/10 dark:text-white/60">Loading featured fragrances…</div>
+            <>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="group relative">
+                  <div className="relative aspect-[3/4] overflow-hidden mb-4 sm:mb-6 border border-old-gold/10 bg-warm-white/70 dark:bg-charcoal/70 shadow-[0_20px_40px_rgba(45,35,17,0.06)]">
+                    <SkeletonShimmer className="absolute inset-0" />
+                    <div className="absolute inset-4 border border-old-gold/10" />
+                    <div className="absolute top-4 sm:top-6 left-4 sm:left-6 h-7 w-20 rounded-full border border-old-gold/10" />
+                  </div>
+                  <div className="space-y-2">
+                    <SkeletonShimmer className="h-6 w-3/4 rounded-full" />
+                    <SkeletonShimmer className="h-4 w-full rounded-full" />
+                    <SkeletonShimmer className="h-4 w-2/3 rounded-full" />
+                    <SkeletonShimmer className="mt-2 h-5 w-20 rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </>
           ) : products.length === 0 ? (
             <div className="col-span-full rounded-2xl border border-dashed border-black/10 p-8 text-center text-sm text-black/60 dark:border-white/10 dark:text-white/60">No featured fragrances available right now.</div>
           ) : products.map((product, index) => (
@@ -830,7 +847,30 @@ function Testimonials() {
 
         <div className="relative w-full" style={{ minHeight: '650px' }}>
           {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center text-sm text-warm-gray dark:text-warm-white/70">Loading testimonials…</div>
+            <div className="absolute inset-0">
+              {imagePositions.slice(0, 8).map((pos, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    'absolute overflow-hidden rounded-2xl border border-old-gold/10 bg-warm-white/80 shadow-[0_16px_35px_rgba(0,0,0,0.08)] dark:bg-charcoal/80',
+                    pos.className
+                  )}
+                  style={{
+                    top: pos.top,
+                    left: pos.left,
+                    right: pos.right,
+                    bottom: pos.bottom,
+                  }}
+                >
+                  <SkeletonShimmer className="h-full w-full rounded-2xl" />
+                </div>
+              ))}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                <div className="pointer-events-auto h-14 w-40 sm:w-48 rounded-full border border-old-gold/15 bg-warm-white/70 shadow-[0_18px_40px_rgba(0,0,0,0.08)] dark:bg-charcoal/70">
+                  <SkeletonShimmer className="h-full w-full rounded-full" />
+                </div>
+              </div>
+            </div>
           ) : testimonialsData.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-warm-gray dark:text-warm-white/70 px-6">
               No approved testimonials yet. Be the first to share your story.
