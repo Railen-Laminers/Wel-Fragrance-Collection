@@ -172,8 +172,23 @@ const TopBar = ({ menuOpen, toggleMenu, scrolled, hideBar, theme, toggleTheme })
 
 /**
  * Full‑screen menu panel.
- * Uses responsive padding‑top to match header height.
- * Menu links are larger (2xl–4xl on lg).
+ *
+ * FIX: the panel used to reveal itself with `scale-y-0 -> scale-y-100`
+ * (a non-uniform transform from `origin-top`). Because that transform
+ * lived on an ANCESTOR of the store image, it vertically stretched/
+ * compressed the image for the first 700ms of the open animation,
+ * independently of the image's own opacity fade (which ran on a
+ * different, later timeline). The two transitions resolved at
+ * different moments, which is what read as the image "settling" or
+ * "popping" into place after everything else looked done.
+ *
+ * Fix: the panel itself now only fades in/out (opacity), never scales.
+ * Since it's `fixed inset-0` its box is already full-screen, so there's
+ * nothing to gain from scaling it — opacity gives an identical "reveal"
+ * feel without ever distorting descendants. The inner nav/image content
+ * keeps its own translate + fade stagger, but now that's the ONLY
+ * transform in the whole tree, so there's a single, consistent timeline
+ * for anything to "settle" into.
  */
 const MenuPanel = ({ open, contentVisible, onNavigate, isActive, menuRef }) => (
   <div
@@ -181,9 +196,9 @@ const MenuPanel = ({ open, contentVisible, onNavigate, isActive, menuRef }) => (
     className={`
       fixed inset-0 z-40
       bg-[#F2EDE6] dark:bg-dark-teal
-      origin-top overflow-hidden
-      transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-      ${open ? 'scale-y-100' : 'scale-y-0 pointer-events-none'}
+      overflow-hidden
+      transition-opacity duration-700 ease-out
+      ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}
     `}
     aria-hidden={!open}
   >
@@ -191,14 +206,15 @@ const MenuPanel = ({ open, contentVisible, onNavigate, isActive, menuRef }) => (
       className={`
         h-full w-full overflow-y-auto px-4 sm:px-8 2xl:max-w-7xl 2xl:mx-auto
         pt-20 sm:pt-24 lg:pt-28 box-border
+        [scrollbar-gutter:stable]
       `}
     >
       <div
         className={`
           flex flex-col lg:flex-row h-full w-full gap-6 sm:gap-8 lg:gap-12
           py-6 sm:py-8 lg:py-12
-          transition-transform duration-500 ease-out
-          ${contentVisible ? 'translate-y-0' : 'translate-y-8'}
+          transition-[transform,opacity] duration-700 ease-out
+          ${contentVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
         `}
       >
         <nav className="lg:w-[70%] flex flex-col justify-center">
@@ -228,17 +244,21 @@ const MenuPanel = ({ open, contentVisible, onNavigate, isActive, menuRef }) => (
           })}
         </nav>
 
-        <div className="lg:w-[30%] flex items-center justify-center">
+        <div className="hidden lg:flex lg:w-[30%] items-center justify-center">
           <div className="relative aspect-[4/5] w-full max-w-sm lg:max-w-full overflow-hidden bg-warm-white/30 dark:bg-charcoal/30 backdrop-blur-sm">
             <div className="absolute inset-4 border border-old-gold/20 z-10 pointer-events-none" />
             <div className="absolute top-4 left-4 w-8 h-8 sm:w-10 sm:h-10 border-t border-l border-old-gold/50 z-10" />
             <div className="absolute bottom-4 right-4 w-8 h-8 sm:w-10 sm:h-10 border-b border-r border-old-gold/50 z-10" />
 
+            {/*
+              Image now shares the exact same transition timing as its
+              parent content block (same duration, same trigger), so it
+              is never out of sync with the rest of the panel. No
+              separate delay, no separate transform.
+            */}
             <div
-              className="relative w-full h-full transition-[clip-path] duration-700 delay-300 ease-out"
-              style={{
-                clipPath: contentVisible ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',
-              }}
+              className="relative w-full h-full transition-opacity duration-700 ease-out"
+              style={{ opacity: contentVisible ? 1 : 0 }}
             >
               <img
                 src={welStore}
@@ -293,11 +313,13 @@ const Navbar = () => {
     };
   }, [menuOpen]);
 
-  // Stagger the menu content in slightly after the panel expands
+  // Stagger the menu content – short delay (150ms) so the panel fade
+  // and the content reveal read as one cohesive beat rather than two
+  // competing animations.
   useEffect(() => {
     if (menuOpen) {
       setContentVisible(false);
-      const timer = setTimeout(() => setContentVisible(true), 250);
+      const timer = setTimeout(() => setContentVisible(true), 150);
       return () => clearTimeout(timer);
     }
     setContentVisible(false);
@@ -306,7 +328,6 @@ const Navbar = () => {
   // ---- Fix aria-hidden focus warning ----
   useEffect(() => {
     if (!menuOpen) {
-      // If the menu is closed, blur any element that might still have focus inside the panel
       const panel = menuRef.current;
       if (panel) {
         const active = document.activeElement;
@@ -346,8 +367,16 @@ const Navbar = () => {
         theme={theme}
         toggleTheme={toggleTheme}
       />
+      {/*
+        FIX: MenuPanel is a plain function component (not created with
+        React.forwardRef), so passing `ref={menuRef}` here would be
+        silently stripped by React — the ref never actually attached to
+        the DOM node, meaning the aria-hidden focus-blur effect above
+        the Navbar was a no-op. Passed as a normal prop `menuRef` instead,
+        matching what MenuPanel already destructures.
+      */}
       <MenuPanel
-        ref={menuRef}
+        menuRef={menuRef}
         open={menuOpen}
         contentVisible={contentVisible}
         onNavigate={handleNavigate}
