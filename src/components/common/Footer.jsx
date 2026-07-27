@@ -63,12 +63,15 @@ const Footer = () => {
                     </div>
                 </div>
 
-                {/* Copyright */}
-                <div className="mt-6 pt-6 border-t border-old-gold/5 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] tracking-widest font-jost text-warm-gray/60 dark:text-warm-white/40">
-                    <span>© {new Date().getFullYear()} Wel Fragrance Collection</span>
-                    <span className="flex items-center gap-2">
-                        <span className="hidden sm:inline">·</span>
-                        <span>All rights reserved</span>
+                {/* Copyright & Credits */}
+                <div className="mt-6 pt-6 border-t border-old-gold/5 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] tracking-widest font-jost text-warm-gray/60 dark:text-warm-white/40">
+                    <span>© {new Date().getFullYear()} Wel Fragrance Collection. All rights reserved.</span>
+                    
+                    <span className="text-center md:text-right flex items-center gap-1.5 transition-opacity duration-300 hover:text-old-gold/80">
+                        Designed & Developed by 
+                        <span className="font-medium text-old-gold dark:text-old-gold">John Carlo Abigania</span> 
+                        & 
+                        <span className="font-medium text-old-gold dark:text-old-gold">Railen Cype Laminero</span>
                     </span>
                 </div>
             </div>
