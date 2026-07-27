@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { getFeaturedProducts } from '../../../api/products';
+import { getPublicFaqs } from '../../../api/faqs';
 import SkeletonShimmer from '../../common/SkeletonShimmer';
 
 // Local product images (adjust paths if needed)
@@ -1011,8 +1012,26 @@ function Testimonials() {
 function FAQ() {
   const sectionRef = useRef(null);
   const [openIndex, setOpenIndex] = useState(null);
+  const [faqs, setFaqs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadFaqs = async () => {
+      try {
+        const data = await getPublicFaqs();
+        // Limit strictly to a maximum of 5 displayed FAQs
+        setFaqs(data.slice(0, 5));
+      } catch (error) {
+        console.error('Failed to load FAQs', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadFaqs();
+  }, []);
+
+  useEffect(() => {
+    if (faqs.length === 0) return;
     const ctx = gsap.context(() => {
       gsap.from('.faq-item', {
         y: 30,
@@ -1027,35 +1046,7 @@ function FAQ() {
       });
     }, sectionRef);
     return () => ctx.revert();
-  }, []);
-
-  const faqs = [
-    {
-      question: 'What makes Wel fragrances unique?',
-      answer:
-        "Each Wel fragrance is handcrafted with nature's purest essences, inspired by the vision of our CEO Joel Malabo. We blend traditional perfumery techniques with modern innovation to create scents that are both timeless and deeply personal.",
-    },
-    {
-      question: 'Do you ship to both the Philippines and Canada?',
-      answer:
-        'Yes, we proudly ship to all regions of the Philippines and across Canada. We offer express shipping options to ensure your fragrance arrives in perfect condition, no matter where you are.',
-    },
-    {
-      question: 'How do I choose my signature scent?',
-      answer:
-        'We recommend exploring our fragrance families — Floral, Oriental, Woody, and Fresh. Each scent is designed to resonate with different personalities and moods. You can also visit our boutiques for a personalized consultation.',
-    },
-    {
-      question: 'Are Wel fragrances suitable as gifts?',
-      answer:
-        'Absolutely. Every Wel fragrance comes in elegant, gift-ready packaging. We also offer complimentary gift wrapping and personalized message cards to make your gift truly special.',
-    },
-    {
-      question: 'What is your return policy?',
-      answer:
-        "We stand behind the quality of our fragrances. If you're not completely satisfied, you may return unopened products within 14 days for a full refund. Opened products can be exchanged within 7 days.",
-    },
-  ];
+  }, [faqs]);
 
   return (
     <section
@@ -1080,54 +1071,66 @@ function FAQ() {
         </div>
 
         <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className="faq-item border border-old-gold/10 hover:border-old-gold/20 transition-colors duration-300 bg-warm-white/70 dark:bg-charcoal/70 backdrop-blur-sm"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full flex items-center justify-between p-4 sm:p-6 lg:p-8 text-left group"
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="faq-item border border-old-gold/10 p-6 bg-warm-white/70 dark:bg-charcoal/70 rounded-none">
+                <SkeletonShimmer className="h-4 w-3/4 rounded-full" />
+              </div>
+            ))
+          ) : faqs.length === 0 ? (
+            <div className="text-center text-warm-gray dark:text-warm-white/60 py-8 text-sm">
+              No FAQs available at the moment.
+            </div>
+          ) : (
+            faqs.map((faq, index) => (
+              <div
+                key={faq._id || index}
+                className="faq-item border border-old-gold/10 hover:border-old-gold/20 transition-colors duration-300 bg-warm-white/70 dark:bg-charcoal/70 backdrop-blur-sm"
               >
-                <span className="font-cormorant text-base sm:text-lg lg:text-xl text-dark-teal dark:text-warm-white group-hover:text-old-gold transition-colors duration-300 pr-6 sm:pr-8">
-                  {faq.question}
-                </span>
-                <span
-                  className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 border border-old-gold/30 flex items-center justify-center transition-all duration-500 ${openIndex === index ? 'bg-old-gold border-old-gold rotate-45' : ''
+                <button
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                  className="w-full flex items-center justify-between p-4 sm:p-6 lg:p-8 text-left group"
+                >
+                  <span className="font-cormorant text-base sm:text-lg lg:text-xl text-dark-teal dark:text-warm-white group-hover:text-old-gold transition-colors duration-300 pr-6 sm:pr-8">
+                    {faq.question}
+                  </span>
+                  <span
+                    className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 border border-old-gold/30 flex items-center justify-center transition-all duration-500 ${openIndex === index ? 'bg-old-gold border-old-gold rotate-45' : ''
+                      }`}
+                  >
+                    <svg
+                      className={`w-3 h-3 transition-colors duration-300 ${openIndex === index
+                        ? 'text-warm-white dark:text-dark-teal'
+                        : 'text-old-gold'
+                        }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  </span>
+                </button>
+
+                <div
+                  className={`overflow-hidden transition-all duration-500 ease-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                 >
-                  <svg
-                    className={`w-3 h-3 transition-colors duration-300 ${openIndex === index
-                      ? 'text-warm-white dark:text-dark-teal'
-                      : 'text-old-gold'
-                      }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </span>
-              </button>
-
-              <div
-                className={`overflow-hidden transition-all duration-500 ease-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-              >
-                <div className="px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
-                  <div className="h-px w-full bg-old-gold/10 mb-4" />
-                  <p className="font-inter text-warm-gray dark:text-warm-white/70 text-sm leading-relaxed">
-                    {faq.answer}
-                  </p>
+                  <div className="px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
+                    <div className="h-px w-full bg-old-gold/10 mb-4" />
+                    <p className="font-inter text-warm-gray dark:text-warm-white/70 text-sm leading-relaxed whitespace-pre-wrap">
+                      {faq.answer}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>
