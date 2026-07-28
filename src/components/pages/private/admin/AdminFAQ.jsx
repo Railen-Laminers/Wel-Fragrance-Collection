@@ -3,6 +3,7 @@ import { getFaqs, createFaq, updateFaq, deleteFaq } from '../../../../api/faqs';
 import { showToast } from '../../../../utils/toast';
 import ConfirmationModal from '../../../common/ConfirmationModal';
 import SkeletonShimmer from '../../../common/SkeletonShimmer';
+import AdminSearchFilters from '../../../common/AdminSearchFilters';
 
 export default function AdminFAQ() {
   const [faqs, setFaqs] = useState([]);
@@ -10,6 +11,7 @@ export default function AdminFAQ() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [pendingActionId, setPendingActionId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({ isActive: '' });
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +21,15 @@ export default function AdminFAQ() {
   const [confirmation, setConfirmation] = useState({
     open: false, title: '', message: '', warning: '', confirmLabel: 'Confirm', onConfirm: null, isProcessing: false,
   });
+
+  const handleFilterChange = (name, value) => {
+    setFilters((current) => ({ ...current, [name]: value }));
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilters({ isActive: '' });
+  };
 
   const loadFaqs = async () => {
     try {
@@ -39,12 +50,18 @@ export default function AdminFAQ() {
 
   const filteredFaqs = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
-    return faqs.filter(faq => 
-      !normalized || 
-      faq.question.toLowerCase().includes(normalized) || 
-      faq.answer.toLowerCase().includes(normalized)
-    );
-  }, [searchQuery, faqs]);
+    return faqs.filter(faq => {
+      const matchesSearch = !normalized || 
+        faq.question.toLowerCase().includes(normalized) || 
+        faq.answer.toLowerCase().includes(normalized);
+      
+      let matchesStatus = true;
+      if (filters.isActive === 'active') matchesStatus = faq.isActive === true;
+      if (filters.isActive === 'hidden') matchesStatus = faq.isActive === false;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchQuery, faqs, filters]);
 
   const openModal = (faq = null) => {
     if (faq) {
@@ -144,12 +161,23 @@ export default function AdminFAQ() {
         </div>
 
         <div className={`mt-8 transition-all duration-700 delay-150 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <input 
-            type="text" 
-            placeholder="Search questions or answers..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:max-w-md px-4 py-2 border border-black/10 dark:border-white/10 bg-transparent rounded-none focus:outline-none focus:border-old-gold placeholder:text-black/40 dark:placeholder:text-white/40"
+          <AdminSearchFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            filterDefinitions={[
+              {
+                name: 'isActive',
+                label: 'Status',
+                options: [
+                  { value: '', label: 'All Statuses' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'hidden', label: 'Hidden' },
+                ],
+              },
+            ]}
+            onClear={clearFilters}
           />
         </div>
 
